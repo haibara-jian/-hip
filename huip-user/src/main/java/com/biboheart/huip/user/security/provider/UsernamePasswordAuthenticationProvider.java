@@ -14,14 +14,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.biboheart.brick.utils.CheckUtils;
-import com.biboheart.huip.user.domain.Safety;
+import com.biboheart.huip.user.domain.Account;
 import com.biboheart.huip.user.domain.User;
-import com.biboheart.huip.user.service.SafetyService;
+import com.biboheart.huip.user.service.AccountService;
 import com.biboheart.huip.user.service.UserService;
 
 public class UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
-	private SafetyService safetyService;
+	private AccountService accountService;
 	@Autowired
 	private UserService userService;
 
@@ -33,18 +33,18 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
 		if (CheckUtils.isEmpty(password)) {
 			throw new BadCredentialsException("密码不能为空");
 		}
-		Safety safety = safetyService.load(null, username, null);
-		if (null == safety) {
+		Account account = accountService.load(null, username, null);
+		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(safety.getUid());
+		User user = userService.load(account.getUid());
 		if (null == user) {
 			throw new BadCredentialsException("用户不存在");
 		}
 		if (password.length() != 32) {
 			password = DigestUtils.md5Hex(password);
 		}
-		if (!password.equals(safety.getPassword())) {
+		if (!password.equals(account.getPassword())) {
 			throw new BadCredentialsException("用户名或密码不正确");
 		}
 		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(username, password, listUserGrantedAuthorities(user.getId()));

@@ -13,15 +13,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.biboheart.brick.utils.CheckUtils;
-import com.biboheart.huip.user.domain.Safety;
+import com.biboheart.huip.user.domain.Account;
 import com.biboheart.huip.user.domain.User;
 import com.biboheart.huip.user.security.tokens.MobileCodeAuthenticationToken;
-import com.biboheart.huip.user.service.SafetyService;
+import com.biboheart.huip.user.service.AccountService;
 import com.biboheart.huip.user.service.UserService;
 
 public class MobileCodeAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
-	private SafetyService safetyService;
+	private AccountService accountService;
 	@Autowired
 	private UserService userService;
 
@@ -33,11 +33,11 @@ public class MobileCodeAuthenticationProvider implements AuthenticationProvider 
 		if (CheckUtils.isEmpty(code)) {
 			throw new BadCredentialsException("验证码不能为空");
 		}
-		Safety safety = safetyService.load(null, null, mobile);
-		if (null == safety) {
+		Account account = accountService.load(null, null, mobile);
+		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(safety.getUid());
+		User user = userService.load(account.getUid());
 		if (null == user) {
 			throw new BadCredentialsException("用户不存在");
 		}
@@ -45,7 +45,7 @@ public class MobileCodeAuthenticationProvider implements AuthenticationProvider 
 		if (!code.equals("0000")) {
 			throw new BadCredentialsException("验证码不正确");
 		}
-		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(safety.getUsername(), code, listUserGrantedAuthorities(user.getId()));
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(account.getUsername(), code, listUserGrantedAuthorities(user.getId()));
 		result.setDetails(authentication.getDetails());
 		return result;
 	}

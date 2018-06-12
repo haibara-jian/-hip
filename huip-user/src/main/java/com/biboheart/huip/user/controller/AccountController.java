@@ -8,33 +8,33 @@ import org.springframework.web.bind.annotation.RestController;
 import com.biboheart.brick.exception.BhException;
 import com.biboheart.brick.model.BhResponseResult;
 import com.biboheart.brick.utils.CheckUtils;
-import com.biboheart.huip.user.domain.Safety;
+import com.biboheart.huip.user.domain.Account;
 import com.biboheart.huip.user.domain.User;
-import com.biboheart.huip.user.service.SafetyService;
+import com.biboheart.huip.user.service.AccountService;
 import com.biboheart.huip.user.service.UserService;
 
 @RestController
-public class SafetyController {
+public class AccountController {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private SafetyService safetyService;
+	private AccountService accountService;
 	
-	@RequestMapping(value = "/userapi/safety/save", method = {RequestMethod.POST})
-	public BhResponseResult<?> save(Safety safety) throws BhException {
-		User user = userService.load(safety.getUid());
+	@RequestMapping(value = "/userapi/account/save", method = {RequestMethod.POST})
+	public BhResponseResult<?> save(Account account) throws BhException {
+		User user = userService.load(account.getUid());
 		if (null == user) {
 			// 如果不是对某个用户设置登录参数则创建一个新用户，用户注册时
 			user = new User();
-			String name = safety.getUsername();
+			String name = account.getUsername();
 			if (CheckUtils.isEmpty(name)) {
-				name = safety.getMobile();
+				name = account.getMobile();
 			}
 			user.setName(name);
 			user = userService.save(user);
 		}
-		safety.setUid(user.getId());
-		safety = safetyService.save(safety);
+		account.setUid(user.getId());
+		account = accountService.save(account);
 		return new BhResponseResult<>(0, "success", user);
 	}
 
