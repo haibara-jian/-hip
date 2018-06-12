@@ -1,6 +1,6 @@
 server:
   # 服务端口号
-  port: 8080
+  port: 8180
 spring:
   datasource:
     # MYSQL数据库驱动
@@ -14,7 +14,7 @@ spring:
   jpa:
     database: default
     # 开发时显示sql，部署到生产环境时设为false
-    show-sql: true
+    show-sql: false
     # 使用mysql方言
     database-platform: org.hibernate.dialect.MySQL5Dialect
     hibernate:

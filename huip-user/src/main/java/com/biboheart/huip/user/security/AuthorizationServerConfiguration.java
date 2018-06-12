@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
 import org.springframework.security.oauth2.provider.approval.TokenApprovalStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
@@ -22,20 +24,25 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
 
+	@Autowired
+	private TokenStore tokenStore;
+
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory()
 			.withClient("client")
 			.secret(new BCryptPasswordEncoder().encode("secret"))
 			.authorizedGrantTypes("client_credentials", "password", "refresh_token", "authorization_code")
-			.scopes("all")
-			.autoApprove(true);
+			.scopes("all", "user_info")
+			.autoApprove(false) // true: 不会跳转到授权页面
+			.redirectUris("http://localhost:8080/login");
 	}
 	
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
 		endpoints
-			.authenticationManager(this.authenticationManager);
+			.authenticationManager(this.authenticationManager)
+			.tokenStore(tokenStore);
 	}
 	
 	@Override
@@ -47,8 +54,14 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	}
 	
 	@Bean
+	public TokenStore tokenStore() {
+		return new InMemoryTokenStore();
+	}
+	
+	@Bean
     public ApprovalStore approvalStore() {
 		TokenApprovalStore store = new TokenApprovalStore();
+		store.setTokenStore(tokenStore);
         return store;
     }
 	
