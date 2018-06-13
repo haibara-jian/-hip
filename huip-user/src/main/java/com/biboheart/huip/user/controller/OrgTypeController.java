@@ -37,10 +37,11 @@ public class OrgTypeController {
 	 * 删除组织类型
 	 * @param id
 	 * @return
+	 * @throws BhException 
 	 * @throws EberException
 	 */
 	@RequestMapping(value = "/userapi/user/orgType/delete", method = {RequestMethod.POST, RequestMethod.GET})
-	public BhResponseResult<?> delete(Integer id, String sn) {
+	public BhResponseResult<?> delete(Integer id, String sn) throws BhException {
 		OrgType ot = orgTypeService.delete(id, sn);
 		return new BhResponseResult<>(0, "success", ot);
 	}

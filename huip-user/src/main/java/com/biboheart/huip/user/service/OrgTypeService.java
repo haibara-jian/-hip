@@ -18,8 +18,9 @@ public interface OrgTypeService {
 	 * 删除组织类型
 	 * @param id 组织类型ID
 	 * @return
+	 * @throws BhException 
 	 */
-	public OrgType delete(Integer id, String sn);
+	public OrgType delete(Integer id, String sn) throws BhException;
 	
 	/**
 	 * 查询组织类型

@@ -11,6 +11,7 @@ import com.biboheart.brick.utils.CheckUtils;
 import com.biboheart.brick.utils.ListUtils;
 import com.biboheart.huip.user.domain.OrgType;
 import com.biboheart.huip.user.domain.OrgTypeRule;
+import com.biboheart.huip.user.repository.OrgRepository;
 import com.biboheart.huip.user.repository.OrgTypeRepository;
 import com.biboheart.huip.user.repository.OrgTypeRuleRepository;
 import com.biboheart.huip.user.service.OrgTypeService;
@@ -21,6 +22,8 @@ public class OrgTypeServiceImpl implements OrgTypeService {
 	private OrgTypeRepository orgTypeRepository;
 	@Autowired
 	private OrgTypeRuleRepository orgTypeRuleRepository;
+	@Autowired
+	private OrgRepository orgRepository;
 
 	@Override
 	public OrgType save(OrgType orgType) throws BhException {
@@ -44,7 +47,7 @@ public class OrgTypeServiceImpl implements OrgTypeService {
 	}
 
 	@Override
-	public OrgType delete(Integer id, String sn) {
+	public OrgType delete(Integer id, String sn) throws BhException {
 		OrgType ot = null;
 		if (null == ot && !CheckUtils.isEmpty(sn)) {
 			ot = orgTypeRepository.findBySnAndIdNot(sn, 0);
@@ -53,6 +56,9 @@ public class OrgTypeServiceImpl implements OrgTypeService {
 			ot = orgTypeRepository.findById(id).get();
 		}
 		if (null != ot) {
+			if (!CheckUtils.isEmpty(orgRepository.countByOtid(ot.getId()))) {
+				throw new BhException("不能删除已经被使用的类型");
+			}
 			orgTypeRepository.delete(ot);
 		}
 		return ot;
