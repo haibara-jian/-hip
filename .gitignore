@@ -30,16 +30,6 @@ target/
 */.metadata
 
 # logs
-/stacktrace.log
-/test/reports
 /logs
 *.log
 *.log.*
-
-# project release file
-/*.war
-
-# older plugin install locations
-/plugins
-/web-app/plugins
-/web-app/WEB-INF/classes
