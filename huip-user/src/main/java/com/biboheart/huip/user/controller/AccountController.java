@@ -22,7 +22,7 @@ public class AccountController {
 	
 	@RequestMapping(value = "/userapi/account/save", method = {RequestMethod.POST})
 	public BhResponseResult<?> save(Account account) throws BhException {
-		User user = userService.load(account.getUid());
+		User user = userService.load(account.getUid(), null);
 		if (null == user) {
 			// 如果不是对某个用户设置登录参数则创建一个新用户，用户注册时
 			user = new User();

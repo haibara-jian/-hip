@@ -8,6 +8,8 @@ import com.biboheart.brick.exception.BhException;
 import com.biboheart.huip.user.domain.User;
 
 public interface UserService {
+	public User current();
+	
 	/**
 	 * 保存用户信息
 	 * 
@@ -34,7 +36,7 @@ public interface UserService {
 	 *            用户ID
 	 * @return 用户信息或null
 	 */
-	public User load(Long id);
+	public User load(Long id, String username);
 
 	/**
 	 * 用户列表

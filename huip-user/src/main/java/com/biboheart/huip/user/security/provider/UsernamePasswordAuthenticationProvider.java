@@ -37,7 +37,7 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
 		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(account.getUid());
+		User user = userService.load(account.getUid(), null);
 		if (null == user) {
 			throw new BadCredentialsException("用户不存在");
 		}

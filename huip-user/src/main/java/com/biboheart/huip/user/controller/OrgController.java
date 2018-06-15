@@ -11,11 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.biboheart.brick.exception.BhException;
 import com.biboheart.brick.model.BhResponseResult;
 import com.biboheart.brick.utils.CheckUtils;
+import com.biboheart.brick.utils.ListUtils;
 import com.biboheart.brick.utils.PrimaryTransverter;
 import com.biboheart.huip.user.domain.Org;
 import com.biboheart.huip.user.domain.OrgType;
+import com.biboheart.huip.user.domain.User;
+import com.biboheart.huip.user.domain.UserOrg;
 import com.biboheart.huip.user.service.OrgService;
 import com.biboheart.huip.user.service.OrgTypeService;
+import com.biboheart.huip.user.service.UserOrgService;
+import com.biboheart.huip.user.service.UserService;
 
 @RestController
 public class OrgController {
@@ -23,6 +28,10 @@ public class OrgController {
 	private OrgService orgService;
 	@Autowired
 	private OrgTypeService orgTypeService;
+	@Autowired
+	private UserOrgService userOrgService;
+	@Autowired
+	private UserService userService;
 	
 	/**
 	 * 保存组织
@@ -97,6 +106,29 @@ public class OrgController {
 				}
 			}
 		}
+		User user = userService.current();
+		if (null != user) {
+			List<UserOrg> uos = userOrgService.list(user.getId());
+			List<Integer> userAllowOidList = null;
+			if (!CheckUtils.isEmpty(uos)) {
+				List<Integer> userOidList = new ArrayList<>();
+				for (UserOrg uo : uos) {
+					userOidList.add(uo.getOid());
+				}
+				userAllowOidList = orgService.listId(null, userOidList, null, 1, null);
+			}
+			if (CheckUtils.isEmpty(userAllowOidList)) {
+				inIdList = new ArrayList<>();
+				inIdList.add(0);
+			} else {
+				if (CheckUtils.isEmpty(inIdList)) {
+					inIdList = userAllowOidList;
+				} else {
+					// 取交集
+					inIdList = ListUtils.intersectionList(inIdList, userAllowOidList);
+				}
+			}
+		}
 		List<Integer> inPidList = PrimaryTransverter.idsStr2List(pids);
 		List<Org> orgs = orgService.list(inIdList, inPidList, inOtidList, descendant, parents, match);
 		return new BhResponseResult<>(0, "success", orgs);
@@ -128,6 +160,29 @@ public class OrgController {
 				}
 				if(!inOtidList.contains(ot.getId())) {
 					inOtidList.add(ot.getId());
+				}
+			}
+		}
+		User user = userService.current();
+		if (null != user) {
+			List<UserOrg> uos = userOrgService.list(user.getId());
+			List<Integer> userAllowOidList = null;
+			if (!CheckUtils.isEmpty(uos)) {
+				List<Integer> userOidList = new ArrayList<>();
+				for (UserOrg uo : uos) {
+					userOidList.add(uo.getOid());
+				}
+				userAllowOidList = orgService.listId(null, userOidList, null, 1, null);
+			}
+			if (CheckUtils.isEmpty(userAllowOidList)) {
+				inIdList = new ArrayList<>();
+				inIdList.add(0);
+			} else {
+				if (CheckUtils.isEmpty(inIdList)) {
+					inIdList = userAllowOidList;
+				} else {
+					// 取交集
+					inIdList = ListUtils.intersectionList(inIdList, userAllowOidList);
 				}
 			}
 		}

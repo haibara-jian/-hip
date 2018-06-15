@@ -48,7 +48,7 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/userapi/user/load", method = {RequestMethod.POST, RequestMethod.GET})
 	public BhResponseResult<?> load(Long id) {
-		User user = userService.load(id);
+		User user = userService.load(id, null);
 		return new BhResponseResult<>(0, "success", user);
 	}
 	

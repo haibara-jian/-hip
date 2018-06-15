@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.biboheart</groupId>
 			<artifactId>bh-brick</artifactId>
-			<version>0.0.1</version>
+			<version>0.0.3</version>
 		</dependency>
 	</dependencies>
 
