@@ -6,6 +6,7 @@ import org.apache.http.HttpStatus;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,8 +26,12 @@ public class UserApplication {
 	
 	@ExceptionHandler(value = Exception.class)
 	public BhResponseResult<?> defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-		if (AnnotationUtils.findAnnotation(e.getClass(), ResponseStatus.class) != null)
+		if (AnnotationUtils.findAnnotation(e.getClass(), ResponseStatus.class) != null) {
 			throw e;
+		}
+		if (e instanceof AuthenticationException) {
+			throw e;
+		}
 		if (e instanceof BhException) {
 			return new BhResponseResult<>(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), null);
 		} else {

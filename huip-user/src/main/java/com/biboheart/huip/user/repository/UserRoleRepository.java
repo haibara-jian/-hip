@@ -10,6 +10,6 @@ import com.biboheart.huip.user.domain.UserRole;
 public interface UserRoleRepository extends CustomRepository<UserRole, Long> {
 	UserRole findByUidAndRid(Long uid, Integer rid);
 	
-	@Query("select rid from UserRole where uid = ?1%")
+	@Query("select rid from UserRole where uid = ?1")
 	List<Integer> findRidByUid(Long uid);
 }
