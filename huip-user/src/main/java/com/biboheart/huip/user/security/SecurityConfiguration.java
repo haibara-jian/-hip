@@ -18,16 +18,19 @@ import com.biboheart.huip.user.security.provider.UsernamePasswordAuthenticationP
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-	
 	@Autowired
     @Qualifier("authenticationManagerBean")
     private AuthenticationManager authenticationManager;
+	/*@Autowired
+	private UserDetailsService customUserDetailsService;
+	@Autowired
+	private PasswordEncoder passwordEncoder;*/
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth
-			.authenticationProvider(mobileCodeAuthenticationProvider())
-			.authenticationProvider(usernamePasswordAuthenticationProvider());
+//		auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
+		auth.authenticationProvider(mobileCodeAuthenticationProvider());
+		auth.authenticationProvider(usernamePasswordAuthenticationProvider());
 	}
 	
 	@Override

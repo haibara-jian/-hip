@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -23,7 +24,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	@Autowired
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
-
+	@Autowired
+	private UserDetailsService customUserDetailsService;
 	@Autowired
 	private TokenStore tokenStore;
 
@@ -42,7 +44,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
 		endpoints
 			.authenticationManager(this.authenticationManager)
-			.tokenStore(tokenStore);
+			.tokenStore(tokenStore)
+			.userDetailsService(customUserDetailsService);
 	}
 	
 	@Override
@@ -69,5 +72,4 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
