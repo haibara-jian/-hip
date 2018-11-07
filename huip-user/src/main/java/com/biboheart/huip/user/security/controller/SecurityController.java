@@ -29,19 +29,19 @@ public class SecurityController {
 	@Autowired
 	private ApprovalStore approvalStore;
 	
-	@RequestMapping(value = "/user/info")
+	@RequestMapping(value = "/account/info")
 	@ResponseBody
-	public ResponseEntity<?> user(Principal principal) {
+	public ResponseEntity<?> info(Principal principal) {
 		return new ResponseEntity<>(principal, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/user/name")
+	@RequestMapping(value = "/account/name")
 	@ResponseBody
 	public String username(Principal principal) {
 		return principal.getName();
 	}
 	
-	@RequestMapping(value = "/user/authorities")
+	@RequestMapping(value = "/account/authorities")
 	@ResponseBody
 	public BhResponseResult<?> authorities(Principal principal) {
 		Collection<? extends GrantedAuthority> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();

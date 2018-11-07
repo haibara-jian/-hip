@@ -1,5 +1,7 @@
 package com.biboheart.huip.user.service.impl;
 
+import java.util.UUID;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,9 +23,6 @@ public class AccountServiceImpl implements AccountService {
 		if (null == account.getId()) {
 			account.setId(0L);
 		}
-		if (CheckUtils.isEmpty(account.getUid())) {
-			throw new BhException("必须关联到用户");
-		}
 		if (CheckUtils.isEmpty(account.getUsername())) {
 			if (!CheckUtils.isEmpty(account.getMobile())) {
 				account.setUsername(account.getMobile());
@@ -32,38 +31,40 @@ public class AccountServiceImpl implements AccountService {
 		if (CheckUtils.isEmpty(account.getUsername())) {
 			throw new BhException("用户名不能为空");
 		}
-		Account source = accountRepository.findByUid(account.getUid());
-		if (null != source) {
+		Account source = null;
+		if (!CheckUtils.isEmpty(account.getSn())) {
+			source = accountRepository.findBySnAndIdNot(account.getSn(), 0L);
+		}
+		if (null != source && account.getId().equals(0L)) {
 			account.setId(source.getId());
 		}
-		source = accountRepository.findByUsername(account.getUsername());
-		if (null != source) {
-			if (!account.getUid().equals(source.getUid())) {
-				throw new BhException("用户名已经被占用");
-			}
-			if (!source.getId().equals(account.getId())) {
-				if (CheckUtils.isEmpty(account.getId())) {
-					account.setId(source.getId());
-				} else {
-					accountRepository.deleteById(source.getId());
-				}
+		if (null != source && !account.getId().equals(source.getId())) {
+			account.setSn(null);
+		}
+		if (null != source && CheckUtils.isEmpty(account.getPassword())) {
+			account.setPassword(source.getPassword());
+		}
+		if (!CheckUtils.isEmpty(account.getMobile())) {
+			source = accountRepository.findByUsernameOrMobile(account.getMobile(), account.getMobile());
+			if (null != source && !source.getId().equals(account.getId())) {
+				throw new BhException("手机号已经存在");
 			}
 		}
-		source = accountRepository.findByMobile(account.getMobile());
-		if (null != source) {
-			if (!account.getUid().equals(source.getUid())) {
-				throw new BhException("用户名已经被占用");
-			}
-			if (!source.getId().equals(account.getId())) {
-				if (CheckUtils.isEmpty(account.getId())) {
-					account.setId(source.getId());
-				} else {
-					accountRepository.deleteById(source.getId());
-				}
+		if (!CheckUtils.isEmpty(account.getUsername())) {
+			source = accountRepository.findByUsernameOrMobile(account.getUsername(), account.getUsername());
+			if (null != source && !source.getId().equals(account.getId())) {
+				throw new BhException("用户名已经存在");
 			}
 		}
 		if (!CheckUtils.isEmpty(account.getPassword()) && account.getPassword().length() != 32) {
 			account.setPassword(DigestUtils.md5Hex(account.getPassword()));
+		}
+		if (CheckUtils.isEmpty(account.getSn())) {
+			String sn = UUID.randomUUID().toString().replace("-", "").toUpperCase();
+			while (null != accountRepository.findBySnAndIdNot(sn, account.getId())) {
+				sn = UUID.randomUUID().toString().replace("-", "").toUpperCase();
+			}
+			account.setSn(sn);
 		}
 		Long now = TimeUtils.getCurrentTimeInMillis();
 		if (CheckUtils.isEmpty(account.getCreateTime())) {
@@ -75,20 +76,25 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void delete(Long id, Long uid) {
-		if (!CheckUtils.isEmpty(uid)) {
-			accountRepository.deleteByUid(uid);
+	public Account delete(Long id, String sn) {
+		Account account = null;
+		if (null == account && !CheckUtils.isEmpty(sn)) {
+			account = accountRepository.findBySnAndIdNot(sn, 0L);
 		}
-		if (!CheckUtils.isEmpty(id)) {
-			accountRepository.deleteById(id);
+		if (null == account && !CheckUtils.isEmpty(id)) {
+			account = accountRepository.findById(id).get();
 		}
+		if (null != account) {
+			accountRepository.delete(account);
+		}
+		return account;
 	}
 	
 	@Override
-	public Account load(Long uid, String username, String mobile) {
+	public Account load(String sn, String username, String mobile) {
 		Account account = null;
-		if (!CheckUtils.isEmpty(uid)) {
-			account = accountRepository.findByUid(uid);
+		if (null == account && !CheckUtils.isEmpty(sn)) {
+			account = accountRepository.findBySnAndIdNot(sn, 0L);
 		}
 		if (null == account && !CheckUtils.isEmpty(username)) {
 			account = accountRepository.findByUsername(username);

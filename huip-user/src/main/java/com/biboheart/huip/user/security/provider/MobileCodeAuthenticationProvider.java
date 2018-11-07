@@ -11,19 +11,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.util.StringUtils;
 
+import com.biboheart.brick.exception.BhException;
 import com.biboheart.brick.utils.CheckUtils;
 import com.biboheart.huip.user.domain.Account;
-import com.biboheart.huip.user.domain.User;
 import com.biboheart.huip.user.security.tokens.MobileCodeAuthenticationToken;
 import com.biboheart.huip.user.service.AccountService;
-import com.biboheart.huip.user.service.UserService;
 
 public class MobileCodeAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
 	private AccountService accountService;
-	@Autowired
-	private UserService userService;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -37,15 +35,18 @@ public class MobileCodeAuthenticationProvider implements AuthenticationProvider 
 		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(account.getUid(), null);
-		if (null == user) {
-			throw new BadCredentialsException("用户不存在");
+		if (StringUtils.isEmpty(account.getSn())) {
+			try {
+				account = accountService.save(account);
+			} catch (BhException e) {
+				e.printStackTrace();
+			}
 		}
 		// 手机号验证码业务还没有开发，先用4个0验证
 		if (!code.equals("0000")) {
 			throw new BadCredentialsException("验证码不正确");
 		}
-		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(account.getUsername(), code, listUserGrantedAuthorities(user.getId()));
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(account.getSn(), code, listUserGrantedAuthorities(account.getSn()));
 		result.setDetails(authentication.getDetails());
 		return result;
 	}
@@ -55,9 +56,9 @@ public class MobileCodeAuthenticationProvider implements AuthenticationProvider 
 		return (MobileCodeAuthenticationToken.class.isAssignableFrom(authentication));
 	}
 
-	private Set<GrantedAuthority> listUserGrantedAuthorities(Long uid) {
+	private Set<GrantedAuthority> listUserGrantedAuthorities(String account) {
 		Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-		if (CheckUtils.isEmpty(uid)) {
+		if (CheckUtils.isEmpty(account)) {
 			return authorities;
 		}
 		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));

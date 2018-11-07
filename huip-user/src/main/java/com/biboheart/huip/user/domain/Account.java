@@ -15,7 +15,7 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id; // ID
-	private Long uid; // 用户ID
+	private String sn; // 账户编号
 	private String username; // 用户名
 	private String mobile; // 手机号
 	private String password; // 密码

@@ -12,18 +12,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.util.StringUtils;
 
+import com.biboheart.brick.exception.BhException;
 import com.biboheart.brick.utils.CheckUtils;
 import com.biboheart.huip.user.domain.Account;
-import com.biboheart.huip.user.domain.User;
 import com.biboheart.huip.user.service.AccountService;
-import com.biboheart.huip.user.service.UserService;
 
 public class UsernamePasswordAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
 	private AccountService accountService;
-	@Autowired
-	private UserService userService;
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -33,13 +31,16 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
 		if (CheckUtils.isEmpty(password)) {
 			throw new BadCredentialsException("密码不能为空");
 		}
-		Account account = accountService.load(null, username, null);
+		Account account = accountService.load(null, username, username);
 		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(account.getUid(), null);
-		if (null == user) {
-			throw new BadCredentialsException("用户不存在");
+		if (StringUtils.isEmpty(account.getSn())) {
+			try {
+				account = accountService.save(account);
+			} catch (BhException e) {
+				e.printStackTrace();
+			}
 		}
 		if (password.length() != 32) {
 			password = DigestUtils.md5Hex(password);
@@ -47,7 +48,7 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
 		if (!password.equals(account.getPassword())) {
 			throw new BadCredentialsException("用户名或密码不正确");
 		}
-		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(username, password, listUserGrantedAuthorities(user.getId()));
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(account.getSn(), password, listUserGrantedAuthorities(account.getSn()));
 		result.setDetails(authentication.getDetails());
 		return result;
 	}
@@ -57,9 +58,9 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
 		return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
 	}
 
-	private Set<GrantedAuthority> listUserGrantedAuthorities(Long uid) {
+	private Set<GrantedAuthority> listUserGrantedAuthorities(String account) {
 		Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-		if (CheckUtils.isEmpty(uid)) {
+		if (CheckUtils.isEmpty(account)) {
 			return authorities;
 		}
 		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));

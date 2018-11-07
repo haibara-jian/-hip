@@ -14,16 +14,12 @@ import org.springframework.stereotype.Component;
 
 import com.biboheart.brick.utils.CheckUtils;
 import com.biboheart.huip.user.domain.Account;
-import com.biboheart.huip.user.domain.User;
 import com.biboheart.huip.user.service.AccountService;
-import com.biboheart.huip.user.service.UserService;
 
 @Component("customUserDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
 	@Autowired
 	private AccountService accountService;
-	@Autowired
-	private UserService userService;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -34,16 +30,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 		if (null == account) {
 			throw new BadCredentialsException("用户不存在");
 		}
-		User user = userService.load(account.getUid(), null);
-		if(null == user) {
-			throw new BadCredentialsException("用户不存在");
-		}
-		return new org.springframework.security.core.userdetails.User(username, account.getPassword(), true, true, true, true, listUserGrantedAuthorities(user.getId()));
+		return new org.springframework.security.core.userdetails.User(account.getSn(), account.getPassword(), true, true, true, true, listUserGrantedAuthorities(account.getSn()));
 	}
 	
-	private Set<GrantedAuthority> listUserGrantedAuthorities(Long uid) {
+	private Set<GrantedAuthority> listUserGrantedAuthorities(String account) {
 		Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-		if (CheckUtils.isEmpty(uid)) {
+		if (CheckUtils.isEmpty(account)) {
 			return authorities;
 		}
 		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));

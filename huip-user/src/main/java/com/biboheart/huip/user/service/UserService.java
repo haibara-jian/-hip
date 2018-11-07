@@ -36,7 +36,7 @@ public interface UserService {
 	 *            用户ID
 	 * @return 用户信息或null
 	 */
-	public User load(Long id, String username);
+	public User load(Long id, String account);
 
 	/**
 	 * 用户列表
