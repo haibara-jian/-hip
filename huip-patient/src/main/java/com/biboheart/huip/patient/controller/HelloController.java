@@ -1,4 +1,4 @@
-package com.biboheart.huip.user.controller;
+package com.biboheart.huip.patient.controller;
 
 import java.security.Principal;
 
@@ -7,6 +7,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,13 +29,19 @@ public class HelloController {
 	@RequestMapping(value = "/demo")
 	@ResponseBody
 	public String username(Principal principal, HttpSession session) {
-		System.out.println(principal.getName());
+		System.out.println("1:" + principal.getName());
 		Object springSecurityContext = session.getAttribute("SPRING_SECURITY_CONTEXT");
 		if (springSecurityContext instanceof SecurityContext) {
 			SecurityContext sc = (SecurityContext) springSecurityContext;
 			Authentication authentication = sc.getAuthentication();
 			if (!(authentication instanceof AnonymousAuthenticationToken)) {
-				System.out.println(authentication.getName());
+				System.out.println("2:" + authentication.getName());
+			}
+		}
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (null != authentication) {
+			if (!(authentication instanceof AnonymousAuthenticationToken)) {
+				System.out.println("3:" + authentication.getName());
 			}
 		}
 		return principal.getName();

@@ -33,6 +33,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory()
 			.withClient("client")
+			// $2a$10$dzJhPcN86a3sc/FEOuzEWunUhkOyu8.76oS4yIZbXQr2L.v6tBkuK
 			.secret(new BCryptPasswordEncoder().encode("secret"))
 			.authorizedGrantTypes("client_credentials", "password", "refresh_token", "authorization_code")
 			.scopes("all", "user_info")

@@ -28,6 +28,11 @@ zuul:
       sensitiveHeaders: 
       serviceId: huip-user-server
       stripPrefix: true
+    patient-service:
+      path: /huippatient/**
+      sensitiveHeaders: 
+      serviceId: huip-patient-server
+      stripPrefix: true
       
 hystrix:
   command:
