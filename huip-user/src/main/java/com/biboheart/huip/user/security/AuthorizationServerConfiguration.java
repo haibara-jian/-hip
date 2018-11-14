@@ -1,5 +1,7 @@
 package com.biboheart.huip.user.security;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -13,10 +15,11 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
 import org.springframework.security.oauth2.provider.approval.TokenApprovalStore;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
@@ -25,20 +28,26 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
 	@Autowired
+	@Qualifier("customClientDetailsService")
+	private ClientDetailsService clientDetailsService;
+	@Autowired
 	private UserDetailsService customUserDetailsService;
+	@Autowired
+    private DataSource dataSource;
 	@Autowired
 	private TokenStore tokenStore;
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-		clients.inMemory()
+		clients.withClientDetails(clientDetailsService);
+		/*clients.inMemory()
 			.withClient("client")
 			// $2a$10$dzJhPcN86a3sc/FEOuzEWunUhkOyu8.76oS4yIZbXQr2L.v6tBkuK
 			.secret(new BCryptPasswordEncoder().encode("secret"))
 			.authorizedGrantTypes("client_credentials", "password", "refresh_token", "authorization_code")
 			.scopes("all", "user_info")
 			.autoApprove(false) // true: 不会跳转到授权页面
-			.redirectUris("http://localhost:8080/login");
+			.redirectUris("http://localhost:8080/login");*/
 	}
 	
 	@Override
@@ -59,7 +68,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 	
 	@Bean
 	public TokenStore tokenStore() {
-		return new InMemoryTokenStore();
+		// return new InMemoryTokenStore();
+		return new JdbcTokenStore(dataSource);
 	}
 	
 	@Bean
